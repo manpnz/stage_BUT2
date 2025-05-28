@@ -11,7 +11,7 @@ execute:
 J'établis le `working directory` et je télécharge le tableau avec les données LC-MS obtenues pour la série de dilutions d'acide chicorique et pour les extraits des plantules de lin. Après, je vérifie l'importation des données et je fais des graphiques préliminaires pour observer les données.
 
 ```{r}
-setwd("D:/Stages_M1/ManonPaniez")
+setwd("C:/Users/manon/OneDrive/Documents/STAGE/stage_BUT2")
 cadat <- read.csv("standart_chicacid.csv")
 flaxdat <- read.csv("flax_chicoricacid.csv")
 names(cadat)
@@ -27,7 +27,7 @@ levels(flaxdat$Condition)
 
 ```
 
-Les données de la série de dilutions contiennent 5 variables et 33 observations. Les données des analyses des extraits de lin contiennent 4 variables et 40 observations. Dans les deux jeux de données, `CAI1`correspond à l'acide chicorique isomère 1 qui élue à .... min. `CAI2` correspond à l'acide chicorique isomère 2 qui élue à .... min. Il y a trois répétitions par dilution.
+Les données de la série de dilutions contiennent 5 variables et 33 observations. Les données des analyses des extraits de lin contiennent 4 variables et 40 observations. Dans les deux jeux de données, `CAI1`correspond à l'acide chicorique isomère 1 qui élue à 3,1 min. `CAI2` correspond à l'acide chicorique isomère 2 qui élue à 3,7 min. Il y a trois répétitions par dilution.
 
 Je vais faire des graphiques préliminaires montrant l'aire des pics d'acide chicorique mesuré dans la série de dilutions d'acide chicorique.
 
@@ -183,7 +183,6 @@ df_rounded
 
 ## Visualiser les valeurs d'acide chicorique prédites
 
-
 ```{r}
 
 #plot
@@ -211,8 +210,7 @@ ggplot(df, aes(x = Condition, y = Concentration_uM)) +
 
 ##Calcul quantité d'acide chicorique par masse sèche de tissu
 
-A partir des concentrations prédites dans les liquides analysés, nous allons calculé la masse en acide chicorique par masse sèche de tissu de plante pour chaque condition de culture.
-créer un facteur de conversion qui transform la concentration dans le liquide analysé (µM) en masse en acide chicorique dans le tissu correspondant (mg)
+A partir des concentrations prédites dans les liquides analysés, nous allons calculé la masse en acide chicorique par masse sèche de tissu de plante pour chaque condition de culture. créer un facteur de conversion qui transform la concentration dans le liquide analysé (µM) en masse en acide chicorique dans le tissu correspondant (mg)
 
 ```{r}
 MW <- 474.371
@@ -223,6 +221,7 @@ names(df2) <- c("Condition", "Mass_microg", "CI.lower_microg", "CI.upper_microg"
 ```
 
 Pour chaque condition nous allons calculer la moyenne des masses sèches pour pouvoir exprimer la quantité en acide chicorique en pourcentage de la masse sèche.
+
 ```{r}
 names(flaxdat.subset)
 #remove aberrant mass
@@ -247,7 +246,9 @@ df2$dryweight <- mean.dryweight.table
 df2
 
 ```
+
 Visualiser les masses par plantule
+
 ```{r}
 
 #plot
@@ -263,7 +264,9 @@ ggplot(df2, aes(x = Condition, y = Mass_microg)) +
 
 
 ```
+
 Diviser toutes les masses par la masse sèche du tissu et visualiser
+
 ```{r}
 CA.per.dryweight <- df2[,c(2:4)] / df2[,5]
 df3 <- data.frame(df[1],CA.per.dryweight)
