@@ -392,7 +392,7 @@ F-statistic:  1132 on 1 and 19 DF,  p-value: &lt; 2.2e-16</code></pre>
 [10] "logtot"             </code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="co">#remove aberrant mass</span></span>
-<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a><span class="co">#flaxdat.subset$weight_dry_tissue[flaxdat.subset$Condition.rep == "96HAI_D.2"]&lt;-NA</span></span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>flaxdat.subset<span class="sc">$</span>weight_dry_tissue[flaxdat.subset<span class="sc">$</span>Condition.rep <span class="sc">==</span> <span class="st">"96HAI_D.2"</span>]<span class="ot">&lt;-</span><span class="cn">NA</span></span>
 <span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>splitted <span class="ot">&lt;-</span><span class="fu">split</span>(flaxdat.subset, flaxdat.subset<span class="sc">$</span>Condition)</span>
 <span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a><span class="co">#create a funciton</span></span>
@@ -416,7 +416,7 @@ F-statistic:  1132 on 1 and 19 DF,  p-value: &lt; 2.2e-16</code></pre>
 <div class="cell-output cell-output-stdout">
 <pre><code>  Condition Mass_microg CI.lower_microg CI.upper_microg dryweight
 1     72HAI   0.6437733        0.518051       0.8000063  0.001428
-2   96HAI_D   1.3530006        1.082356       1.6913197  0.004554
+2   96HAI_D   1.3530006        1.082356       1.6913197  0.003100
 3   96HAI_L   1.7455929        1.362985       2.2356039  0.003160
 4  120HAI_D   2.0659403        1.640371       2.6019172  0.003748
 5 120HAI_L1   1.3753047        1.099939       1.7196066  0.003190
