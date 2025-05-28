@@ -225,7 +225,7 @@ Pour chaque condition nous allons calculer la moyenne des masses sèches pour po
 ```{r}
 names(flaxdat.subset)
 #remove aberrant mass
-#flaxdat.subset$weight_dry_tissue[flaxdat.subset$Condition.rep == "96HAI_D.2"]<-NA
+flaxdat.subset$weight_dry_tissue[flaxdat.subset$Condition.rep == "96HAI_D.2"]<-NA
 splitted <-split(flaxdat.subset, flaxdat.subset$Condition)
 
 #create a funciton
