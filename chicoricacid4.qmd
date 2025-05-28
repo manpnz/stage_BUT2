@@ -1,0 +1,284 @@
+---
+title: "Chicoric Acid, Quarto"
+format: html
+editor: visual
+execute:
+ echo: true
+---
+
+## Télécharger et vérifier les données
+
+J'établis le `working directory` et je télécharge le tableau avec les données LC-MS obtenues pour la série de dilutions d'acide chicorique et pour les extraits des plantules de lin. Après, je vérifie l'importation des données et je fais des graphiques préliminaires pour observer les données.
+
+```{r}
+setwd("D:/Stages_M1/ManonPaniez")
+cadat <- read.csv("standart_chicacid.csv")
+flaxdat <- read.csv("flax_chicoricacid.csv")
+names(cadat)
+dim(cadat)
+table(cadat$dilutionM)
+
+names(flaxdat)
+dim(flaxdat)
+flaxdat$CAtot <- flaxdat$CAI1 + flaxdat$CAI2
+str(flaxdat$Condition)
+flaxdat$Condition <- factor(flaxdat$Condition, levels = c("72HAI", "96HAI_D","96HAI_L","120HAI_D", "120HAI_L1", "120HAI_L2", "144HAI_D", "144HAI_L1"))
+levels(flaxdat$Condition)
+
+```
+
+Les données de la série de dilutions contiennent 5 variables et 33 observations. Les données des analyses des extraits de lin contiennent 4 variables et 40 observations. Dans les deux jeux de données, `CAI1`correspond à l'acide chicorique isomère 1 qui élue à .... min. `CAI2` correspond à l'acide chicorique isomère 2 qui élue à .... min. Il y a trois répétitions par dilution.
+
+Je vais faire des graphiques préliminaires montrant l'aire des pics d'acide chicorique mesuré dans la série de dilutions d'acide chicorique.
+
+```{r}
+logdil <- log2(cadat$dilutionM)
+logCA1 <- log2(cadat$CAI1)
+logCA2 <- log2(cadat$CAI2)
+logCAtot <- log2(cadat$CAI1 + cadat$CAI2)
+
+par(mfrow=c(1,3),cex=0.7, mar = c(5, 4, 1, 2) + 0.1, oma = c(0, 0, 2, 0))
+plot(logdil,logCA1, xlab = "log2 (dilution (µM))", ylab = "log2 (aire du pic (unités arbitraires))")
+plot(logdil,logCA2, xlab = "log2 (dilution (µM))", ylab = "log2 (aire du pic (unités arbitraires))")
+plot(logdil,logCAtot, xlab = "log2 (dilution (µM))", ylab = "log2 (aire du pic (unités arbitraires))")
+title("Quantification d'acide chicorique dans série de dilutions",  line=1,outer = T)
+par(mfrow = c(1,1), mar = c(5, 4, 4, 2) + 0.1, oma = c(0, 0, 0, 0), cex=1)
+
+```
+
+Je vais faire des graphiques préliminaires montrant l'aire total des pics d'acide chicorique mesuré dans les plantules de lin.
+
+```{r}
+par(mfrow = c(1,2), mar = c(5, 4, 1, 2) + 0.1, oma = c(0, 0, 2, 0))
+
+boxplot(flaxdat$CAtot ~ flaxdat$Condition, range=0,  xlab = "Traitement", ylab = "Aire de pic d'acide chicorique", cex.main = 0.9, cex.axis = 0.5, las=2)
+stripchart(flaxdat$CAtot ~ flaxdat$Condition, add = TRUE, vertical = TRUE, method="jitter", jitter=.1)
+
+
+boxplot(log2(flaxdat$CAtot) ~ flaxdat$Condition, range=0, xlab = "Traitement", ylab = "log2 (Aire de pic d'acide chicorique)", cex.main = 0.9, cex.axis = 0.5, las=2)
+stripchart(log2(flaxdat$CAtot) ~ flaxdat$Condition, add = TRUE, vertical = TRUE, method="jitter", jitter=.1)
+title("Quantification d'acide chicorique dans les plantules de lin",  line=1,outer = T)
+par(mfrow = c(1,1), mar = c(5, 4, 4, 2) + 0.1, oma = c(0, 0, 0, 0))
+```
+
+## Eliminer les valeurs extrêmes dans les données de la série de dilution
+
+Les valeurs observées pour les plus fortes dilutions (plus faibles concentrations) représentent beaucoup de variation. Les mesures pour ces dilutions-là, particulièrement pour le deuxième isomère, ne sont pas précises parce que elles sont trop basses. Nous allons continuer avec les données des dilutions à partir de 0.5 µM.
+
+```{r}
+cadat05 <- cadat[cadat$dilutionM >=0.5,]
+logdil <- log2(cadat05$dilutionM)
+logCA1 <- log2(cadat05$CAI1)
+logCA2 <- log2(cadat05$CAI2)
+logCAtot <- log2(cadat05$CAI1 + cadat05$CAI2)
+
+par(mfrow=c(1,3),cex=0.7, mar = c(5, 4, 1, 2) + 0.1, oma = c(0, 0, 2, 0))
+plot(logdil,logCA1, xlab = "log2 (dilution (µM))", ylab = "log2 (aire du pic (unités arbitraires))")
+plot(logdil,logCA2, xlab = "log2 (dilution (µM))", ylab = "log2 (aire du pic (unités arbitraires))")
+plot(logdil,logCAtot, xlab = "log2 (dilution (µM))", ylab = "log2 (aire du pic (unités arbitraires))")
+title("Quantification d'acide chicorique dans série de dilutions",  line=1,outer = T)
+par(mfrow = c(1,1), mar = c(5, 4, 4, 2) + 0.1, oma = c(0, 0, 0, 0), cex=1)
+```
+
+## Eliminer les valeurs extrêmes dans les données des plantules
+
+Dans les valeurs `log2(flaxdat$CAtot)`, il y a une valeur extrêmement basse, correspondant à l'échantillon `96HAI_L répétition 3`.
+
+```{r}
+flaxdat$Condition.rep <-paste(flaxdat$Condition,flaxdat$Rep, sep=".")
+flaxdat.subset <- flaxdat[!(flaxdat$Condition.rep =="96HAI_L.3"),]
+dim(flaxdat.subset)
+
+par(mfrow = c(1,2), mar = c(5, 4, 1, 2) + 0.1, oma = c(2, 0, 2, 0))
+
+boxplot(flaxdat.subset$CAtot ~ flaxdat.subset$Condition, range=0,  xlab = "Traitement", ylab = "Aire de pic d'acide chicorique", cex.main = 0.9, cex.axis = 0.5, las=2)
+stripchart(flaxdat.subset$CAtot ~ flaxdat.subset$Condition, add = TRUE, vertical = TRUE, method="jitter", jitter=.1)
+
+
+boxplot(log2(flaxdat.subset$CAtot) ~ flaxdat.subset$Condition, range=0, xlab = "Traitement", ylab = "log2 (Aire de pic d'acide chicorique)", cex.main = 0.9, cex.axis = 0.5, las=2)
+stripchart(log2(flaxdat.subset$CAtot) ~ flaxdat.subset$Condition, add = TRUE, vertical = TRUE, method="jitter", jitter=.1)
+title(main="Quantification d'acide chicorique dans les plantules de lin",  line=1,outer = T)
+title(sub="Après élinimantion valeur extrême",  line=1, outer=T)
+par(mfrow = c(1,1), mar = c(5, 4, 4, 2) + 0.1, oma = c(0, 0, 0, 0))
+
+
+```
+
+Les valeurs observées dans les plantules de lin se trouvent bien dans l'intervalle des valeurs observées dans la série de dilutions entre 0.5 µM et 50 µM.
+
+## Créer le modèle de régression linéaire
+
+```{r}
+model <- lm(logCAtot~logdil)
+summary(model)
+```
+
+Le test-t de la pente (`logdil`) montre que la régression est significative, c'est à dire, le modèle donne une meilleure prédiction des valeurs d'acide chicorique, que de prendre simplement la valeur moyenne. La valeur `R-squared` est 0.9835, indiquant que un grande part de la variabilité en aires de pics pour l'acide chicorique est expliqué par le modèle.
+
+Pour vérifier si les conditions pour un modèle de régression linéaire fiable sont respectées, je vais regarder les résidus.
+
+```{r}
+par(mfrow = c(2,2))
+plot(model)
+par(mfrow = c(1,1))
+```
+
+Les `residuals plot` montrent que la distribution des résidus est proche d'une distribution normale et que la variation des résidus est stable à travers les différentes dilutions (homoscédasticité). Le modèle linéaire est donc fiable.
+
+## Prédire les valeurs d'acide chicorique dans les analyses de lin
+
+Une prédiction inverse nécessite un package spécifique, dédié à la chimiométrie.
+
+```{r}
+#| label: load-packages
+#| include: false
+
+library(chemCal)
+library(ggplot2)
+```
+
+On fera des prédictions pour chaque condition de culture des plantules.
+
+```{r}
+names(flaxdat.subset)
+flaxdat.subset$logtot <- log2(flaxdat.subset$CAtot)
+splitted <-split(flaxdat.subset, flaxdat.subset$Condition)
+
+```
+
+Nous devons créer une fonction qui prédit, pour un nouveau jeu de données (log2 de l'aire de pic total de l'acide chicorique dans un nombre de répétitions biologiques d'une certaine condition de culture), la concentration en acide chicorique moyenne et une intervalle de confiance à 95%.
+
+```{r}
+predict.conc <- function(X){
+ip <- inverse.predict(model, newdata = X$logtot)
+estimate <- do.call(cbind, ip[1:2])
+colnames(estimate)[1] <- "log2_Estimate"
+colnames(estimate)[2] <- "log2_SE"
+cbind(estimate, log2_CI.lowerlimit=ip[[4]][1], log2_CI.upperlimit=ip[[4]][2])
+}
+#test the function
+block1 <- splitted[[1]]
+predict.conc(block1)
+block6 <- splitted[[6]]
+predict.conc(block6)
+```
+
+Nous appliquons notre fonction à chaque condition de culture.
+
+```{r}
+#apply function on all conditions in flaxdat2
+predict.per.condition <- lapply(splitted,FUN=predict.conc)
+prediction.table <-do.call(rbind, predict.per.condition)
+prediction.table
+Condition = factor(levels(flaxdat.subset$Condition), levels = levels(flaxdat.subset$Condition))
+
+df <- data.frame(Condition, prediction.table)
+df$Concentration_uM <- 2^df$log2_Estimate
+df$CI.lower_uM <- 2^df$log2_CI.lowerlimit
+df$CI.upper_uM <- 2^df$log2_CI.upperlimit
+df_rounded <- df
+df_rounded[, 2:8] <- round(df_rounded[, 2:8], 2)
+df_rounded
+```
+
+## Visualiser les valeurs d'acide chicorique prédites
+
+
+```{r}
+
+#plot
+ggplot(df, aes(x = Condition, y = log2_Estimate)) +
+  geom_point(color = "blue", size = 3) +
+  geom_errorbar(aes(ymin = log2_CI.lowerlimit, ymax = log2_CI.upperlimit), width = 0.2, color = "black") +
+  labs(
+    title = "Prédictions et intervalles de confiance à 95%",
+    x = "Condition de culture",
+    y = "log2 de concentration prédite"
+  ) +
+  theme_minimal()
+
+#plot
+ggplot(df, aes(x = Condition, y = Concentration_uM)) +
+  geom_point(color = "blue", size = 3) +
+  geom_errorbar(aes(ymin = CI.lower_uM, ymax =  CI.upper_uM), width = 0.2, color = "black") +
+  labs(
+    title = "Prédictions rétroconverties et intervalles de confiance à 95%",
+    x = "Condition de culture",
+    y = "Concentration prédite (µM)"
+  ) +
+  theme_minimal()
+```
+
+##Calcul quantité d'acide chicorique par masse sèche de tissu
+
+A partir des concentrations prédites dans les liquides analysés, nous allons calculé la masse en acide chicorique par masse sèche de tissu de plante pour chaque condition de culture.
+créer un facteur de conversion qui transform la concentration dans le liquide analysé (µM) en masse en acide chicorique dans le tissu correspondant (mg)
+
+```{r}
+MW <- 474.371
+microM.to.microg <- 474.371*800*10^6/(3*10^12)
+CA.mass.per.tissue <- df[,c(6:8)] * microM.to.microg
+df2 <- data.frame(df[1],CA.mass.per.tissue)
+names(df2) <- c("Condition", "Mass_microg", "CI.lower_microg", "CI.upper_microg")
+```
+
+Pour chaque condition nous allons calculer la moyenne des masses sèches pour pouvoir exprimer la quantité en acide chicorique en pourcentage de la masse sèche.
+```{r}
+names(flaxdat.subset)
+#remove aberrant mass
+#flaxdat.subset$weight_dry_tissue[flaxdat.subset$Condition.rep == "96HAI_D.2"]<-NA
+splitted <-split(flaxdat.subset, flaxdat.subset$Condition)
+
+#create a funciton
+mean.mass.tissue.g <- function(X){
+dryweight <- X$weight_dry_tissue
+mean(dryweight, na.rm=TRUE)*(10^-3)
+}
+
+#test the function on one block
+block1 <- splitted[[1]]
+mean.mass.tissue.g(block1)
+
+#apply functionon all blocks of the list
+mean.per.condition <- lapply(splitted,FUN=mean.mass.tissue.g)
+mean.dryweight.table <-do.call(rbind, mean.per.condition)
+#mean.dryweight.table <- data.frame(mean.dryweight = mean.dryweight.table)
+df2$dryweight <- mean.dryweight.table
+df2
+
+```
+Visualiser les masses par plantule
+```{r}
+
+#plot
+ggplot(df2, aes(x = Condition, y = Mass_microg)) +
+  geom_point(color = "blue", size = 3) +
+  geom_errorbar(aes(ymin = CI.lower_microg, ymax = CI.upper_microg), width = 0.2, color = "black") +
+  labs(
+    title = "Prédictions et intervalles de confiance à 95%",
+    x = "Condition de culture",
+    y = "contenu (microgramme par plantule)"
+  ) +
+  theme_minimal()
+
+
+```
+Diviser toutes les masses par la masse sèche du tissu et visualiser
+```{r}
+CA.per.dryweight <- df2[,c(2:4)] / df2[,5]
+df3 <- data.frame(df[1],CA.per.dryweight)
+names(df3) <- c("Condition", "Mass_microgram.per.g", "CI.lower", "CI.upper")
+
+#plot
+ggplot(df3, aes(x = Condition, y = Mass_microgram.per.g)) +
+  geom_point(color = "blue", size = 3) +
+  geom_errorbar(aes(ymin = CI.lower, ymax = CI.upper), width = 0.2, color = "black") +
+  labs(
+    title = "Prédictions et intervalles de confiance à 95%",
+    x = "Condition de culture",
+    y = "contenu (microgramme par gramme)"
+  ) +
+  theme_minimal()
+
+
+```
