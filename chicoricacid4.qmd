@@ -87,6 +87,7 @@ Dans les valeurs `log2(flaxdat$CAtot)`, il y a une valeur extrêmement basse, co
 ```{r}
 flaxdat$Condition.rep <-paste(flaxdat$Condition,flaxdat$Rep, sep=".")
 flaxdat.subset <- flaxdat[!(flaxdat$Condition.rep =="96HAI_L.3"),]
+flaxdat.subset <- flaxdat.subset[!(flaxdat.subset$Condition.rep =="120HAI_L2.1"),]
 dim(flaxdat.subset)
 
 par(mfrow = c(1,2), mar = c(5, 4, 1, 2) + 0.1, oma = c(2, 0, 2, 0))
@@ -135,6 +136,7 @@ Une prédiction inverse nécessite un package spécifique, dédié à la chimiom
 
 library(chemCal)
 library(ggplot2)
+library(patchwork)
 ```
 
 On fera des prédictions pour chaque condition de culture des plantules.
@@ -282,6 +284,48 @@ ggplot(df3, aes(x = Condition, y = Mass_microgram.per.g)) +
     y = "contenu (microgramme par gramme)"
   ) +
   theme_minimal()
+
+
+```
+##Préparation figure pour publication
+Pour une publication, il faut une figure montrant la quantité d'acide chicorique, seulement dans les conditions 72HAI, 96HAI_D, et 120HAI_L2. La figure doit montrer un graph avec les quantités par plantule et un graph avec les quantités par gramme.
+```{r}
+df2.pp <- df2[c(1,2,6),]
+df3.pp <- df3[c(1,2,6),]
+df2.pp$Condition <- c("72", "96", "120")
+df2.pp$Condition = factor(df2.pp$Condition, levels = c("72", "96", "120"))
+df3.pp$Condition = factor(df3.pp$Condition, levels = c("72", "96", "120"))
+
+#plot
+ggp1 <- ggplot(df2.pp, aes(x = Condition, y = Mass_microg)) +
+  geom_point(color = "blue", size = 3) +
+  geom_errorbar(aes(ymin = CI.lower_microg, ymax = CI.upper_microg), width = 0.2, color = "black") +
+  labs(
+    x = "Hours after imbibition",
+    y = "Chicoric acid (µg / whole seedling)"
+  ) 
+ 
+
+#plot
+ggp2 <- ggplot(df3.pp, aes(x = Condition, y = Mass_microgram.per.g)) +
+  geom_point(color = "blue", size = 3) +
+  geom_errorbar(aes(ymin = CI.lower, ymax = CI.upper), width = 0.2, color = "black") +
+  labs(
+    x = "Hours after imbibition",
+    y = "Chicoric acid (µg / g)"
+  )
+ 
+
+ggp.all <- (ggp1+ggp2)+
+  plot_annotation(title = "Chicoric acid content in flax seedlings")&
+  theme(plot.title = element_text(hjust = 0.5))
+
+ggp.all
+
+#create pdf
+pdf("chicoricacidcontent.pdf")
+ggp.all
+dev.off()
 
 
 ```
